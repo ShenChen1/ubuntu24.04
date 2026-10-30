@@ -215,7 +215,7 @@ elif [ "$TARGET" == "server" ]; then
     \${APT_INSTALL} bluez bluez-tools
     echo -e "\033[47;36m ----- Install Qt Mali DRM/EGLFS Runtime (Headless Server) ----- \033[0m"
     \${APT_INSTALL} libqt5gui5 qt5-qpa-plugins libqt5core5a libqt5widgets5 libqt5network5 \
-        kmscube libinput10 fonts-wqy-zenhei
+        kmscube libinput10 fonts-wqy-zenhei gdbserver strace
 fi
 
 \${APT_INSTALL} /packages/install_packages/*.deb
