@@ -28,6 +28,6 @@ IMAGE_SIZE_MB=$(( $(sudo du --apparent-size -sm ${TARGET_ROOTFS_DIR} | cut -f1) 
 # Extra 10%
 IMAGE_SIZE_MB=$(( $IMAGE_SIZE_MB * 110 / 100 ))
 
-sudo mkfs.ext4 -d ${TARGET_ROOTFS_DIR} ${ROOTFSIMAGE} ${IMAGE_SIZE_MB}M
+sudo mkfs.ext4 -O ^orphan_file -d ${TARGET_ROOTFS_DIR} ${ROOTFSIMAGE} ${IMAGE_SIZE_MB}M
 
 echo Rootfs Image: ${ROOTFSIMAGE}

@@ -213,15 +213,27 @@ elif [[ "$TARGET" == "xfce" || "$TARGET" == "xfce-full" ]]; then
     ln -sf /usr/share/xfce4/backdrops/armsom-wallpaper.png /usr/share/xfce4/backdrops/xubuntu-wallpaper.png
 elif [ "$TARGET" == "server" ]; then
     \${APT_INSTALL} bluez bluez-tools
+    echo -e "\033[47;36m ----- Install Qt Mali DRM/EGLFS Runtime (Headless Server) ----- \033[0m"
+    \${APT_INSTALL} libqt5gui5 qt5-qpa-plugins libqt5core5a libqt5widgets5 libqt5network5 \
+        kmscube libinput10 fonts-wqy-zenhei
 fi
 
 \${APT_INSTALL} /packages/install_packages/*.deb
 
-\${APT_INSTALL} /boot/kerneldeb/* || true
+if [ "$TARGET" == "server" ]; then
+    # Keep linux-headers in /boot/kerneldeb for backup, only install runtime kernel image
+    \${APT_INSTALL} /boot/kerneldeb/linux-image-*.deb || true
+else
+    \${APT_INSTALL} /boot/kerneldeb/* || true
+fi
 
 echo -e "\033[47;36m ----- power management ----- \033[0m"
-\${APT_INSTALL} pm-utils triggerhappy bsdmainutils
-cp /etc/Powermanager/triggerhappy.service  /lib/systemd/system/triggerhappy.service
+if [ "$TARGET" != "server" ]; then
+    \${APT_INSTALL} pm-utils triggerhappy bsdmainutils
+    cp /etc/Powermanager/triggerhappy.service  /lib/systemd/system/triggerhappy.service
+else
+    \${APT_INSTALL} bsdmainutils
+fi
 sed -i "s/#HandlePowerKey=.*/HandlePowerKey=ignore/" /etc/systemd/logind.conf
 
 echo -e "\033[47;36m ----------- RGA  ----------- \033[0m"
@@ -293,13 +305,16 @@ if [[ "$TARGET" == "gnome-full" || "$TARGET" == "xfce-full" ]]; then
 fi
 
 apt autoremove -y
-\${APT_INSTALL} ubuntu-desktop
 
-add-apt-repository ppa:mozillateam/ppa && \
-echo 'Package: firefox*
+if [[ "$TARGET" == "gnome" || "$TARGET" == "gnome-full" ]]; then
+    \${APT_INSTALL} ubuntu-desktop
+
+    add-apt-repository ppa:mozillateam/ppa && \
+    echo 'Package: firefox*
 Pin: release o=LP-PPA-mozillateam
 Pin-Priority: 1001' | tee /etc/apt/preferences.d/mozilla-firefox && \
-apt-get update && \${APT_INSTALL} firefox
+    apt-get update && \${APT_INSTALL} firefox
+fi
 
 # mark package to hold
 apt list --upgradable | cut -d/ -f1 | xargs apt-mark hold
@@ -331,9 +346,18 @@ then
     rm /etc/profile.d/qt.sh
 fi
 
-// fix: MACAddressPolicy 
+# Ensure user armsom has direct access to GPU/DRM/input
+usermod -aG video,render,input armsom 2>/dev/null || true
+
+# fix: MACAddressPolicy 
 truncate -s 0 /etc/machine-id
 truncate -s 0 /var/lib/dbus/machine-id 2>/dev/null || true
+
+# Clean desktop icons & docs for headless server
+if [ "$TARGET" == "server" ]; then
+    rm -rf /usr/share/icons/Adwaita /usr/share/icons/Humanity* /usr/share/icons/ubuntu-mono* 2>/dev/null || true
+    rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/groff/* /usr/share/info/* 2>/dev/null || true
+fi
 
 rm -rf /home/$(whoami)
 rm -rf /var/lib/apt/lists/*

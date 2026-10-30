@@ -1,0 +1,17 @@
+{
+  "device": "/dev/dri/card0",
+  "hwcursor": false,
+  "pbuffers": true,
+  "outputs": [
+    {
+      "name": "HDMI-A-1",
+      "mode": "1920x1080",
+      "format": "xrgb8888"
+    },
+    {
+      "name": "DP-1",
+      "mode": "1920x1080",
+      "format": "xrgb8888"
+    }
+  ]
+}

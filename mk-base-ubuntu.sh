@@ -46,7 +46,7 @@ UBUNTU_RELEASE="24.04.3"
 if [ ! -d $TARGET_ROOTFS_DIR ] ; then
     sudo mkdir -p $TARGET_ROOTFS_DIR
 
-    if [ ! -e ubuntu-base-22.04.5-base-$ARCH.tar.gz ]; then
+    if [ ! -e ubuntu-base-${UBUNTU_RELEASE}-base-$ARCH.tar.gz ]; then
         echo "\033[36m wget ubuntu-base-${UBUNTU_RELEASE}-base-"$ARCH".tar.gz \033[0m"
 		wget -c http://cdimage.ubuntu.com/ubuntu-base/releases/${UBUNTU_VERSION}/release/ubuntu-base-${UBUNTU_RELEASE}-base-$ARCH.tar.gz
     fi
@@ -58,6 +58,24 @@ URIs: http://ports.ubuntu.com/ubuntu-ports/
 Suites: noble noble-updates noble-security noble-backports
 Components: main restricted universe multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF
+
+    # Configure dpkg & apt to exclude documentation and non-essential locales
+    sudo mkdir -p $TARGET_ROOTFS_DIR/etc/dpkg/dpkg.cfg.d
+    sudo tee $TARGET_ROOTFS_DIR/etc/dpkg/dpkg.cfg.d/01_nodoc << 'EOF'
+path-exclude /usr/share/doc/*
+path-exclude /usr/share/man/*
+path-exclude /usr/share/groff/*
+path-exclude /usr/share/info/*
+path-exclude /usr/share/locale/*
+path-include /usr/share/locale/en*
+path-include /usr/share/locale/zh*
+EOF
+
+    sudo mkdir -p $TARGET_ROOTFS_DIR/etc/apt/apt.conf.d
+    sudo tee $TARGET_ROOTFS_DIR/etc/apt/apt.conf.d/02_nocache << 'EOF'
+APT::Install-Recommends "false";
+APT::Install-Suggests "false";
 EOF
 
     if [ "$ARCH" == "armhf" ]; then
@@ -93,19 +111,26 @@ if [ "$TARGET" == "gnome" ]; then
 elif [ "$TARGET" == "xfce" ]; then
     \${APT_INSTALL} xubuntu-core rsyslog sudo dialog apt-utils ntp evtest udev
 elif [ "$TARGET" == "server" ]; then
-    \${APT_INSTALL} rsyslog sudo dialog apt-utils ntp evtest acpid
+    \${APT_INSTALL} sudo dialog apt-utils ntp evtest acpid
 elif [ "$TARGET" == "gnome-full" ]; then
     \${APT_INSTALL} ubuntu-desktop-minimal rsyslog sudo dialog apt-utils ntp evtest onboard
 elif [ "$TARGET" == "xfce-full" ]; then
     \${APT_INSTALL} xubuntu-desktop rsyslog sudo dialog apt-utils ntp evtest udev
 fi
 
-\${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager gdb inetutils-ping libssl-dev \
-    vsftpd tcpdump can-utils i2c-tools strace vim iperf3 ethtool netplan.io toilet htop pciutils usbutils curl \
-    whiptail gnupg bc xinput gdisk parted gcc sox libsox-fmt-all gpiod libgpiod-dev python3-pip python3-libgpiod \
-    guvcview u-boot-tools bash-completion wget git python3 python3-venv libgl1 libglib2.0-0
+if [ "$TARGET" == "server" ]; then
+    \${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager inetutils-ping \
+        tcpdump can-utils i2c-tools vim-tiny iperf3 ethtool netplan.io htop pciutils usbutils curl \
+        whiptail gnupg bc gdisk parted gpiod python3-libgpiod u-boot-tools bash-completion wget git python3 \
+        libgl1 libglib2.0-0 ttf-wqy-zenhei
+else
+    \${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager gdb inetutils-ping libssl-dev \
+        vsftpd tcpdump can-utils i2c-tools strace vim iperf3 ethtool netplan.io toilet htop pciutils usbutils curl \
+        whiptail gnupg bc xinput gdisk parted gcc sox libsox-fmt-all gpiod libgpiod-dev python3-pip python3-libgpiod \
+        guvcview u-boot-tools bash-completion wget git python3 python3-venv libgl1 libglib2.0-0
 
-\${APT_INSTALL} ttf-wqy-zenhei xfonts-intl-chinese
+    \${APT_INSTALL} ttf-wqy-zenhei xfonts-intl-chinese
+fi
 
 if [[ "$TARGET" == "gnome-full" ||  "$TARGET" == "xfce-full" ]]; then
     apt purge ibus firefox -y
@@ -158,6 +183,8 @@ armsom
 IEOF
 gpasswd -a armsom video
 gpasswd -a armsom audio
+gpasswd -a armsom render
+gpasswd -a armsom input
 passwd root <<IEOF
 root
 root
