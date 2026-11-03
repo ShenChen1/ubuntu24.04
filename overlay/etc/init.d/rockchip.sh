@@ -72,7 +72,7 @@ update_npu_fw() {
 }
 
 
-compatible=$(cat /proc/device-tree/compatible)
+compatible=$(tr -d '\0' < /proc/device-tree/compatible)
 chipname=""
 case "$compatible" in
     *rk3288*)  chipname="rk3288" ;;
