@@ -359,6 +359,13 @@ if [ "$TARGET" == "server" ]; then
     rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/groff/* /usr/share/info/* 2>/dev/null || true
 fi
 
+# Strip unneeded PC/USB wireless firmwares for RK3576 (board only uses AP6275P and rockchip)
+if [ "$SOC" == "rk3576" ]; then
+    rm -rf /usr/lib/firmware/intel /usr/lib/firmware/rtw89 /usr/lib/firmware/aic8800 \
+           /usr/lib/firmware/mediatek /usr/lib/firmware/rtlwifi /usr/lib/firmware/rtl_bt \
+           /usr/lib/firmware/rtw88 /usr/lib/firmware/rtl_nic 2>/dev/null || true
+fi
+
 rm -rf /home/$(whoami)
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/
