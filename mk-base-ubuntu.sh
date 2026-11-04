@@ -111,7 +111,7 @@ if [ "$TARGET" == "gnome" ]; then
 elif [ "$TARGET" == "xfce" ]; then
     \${APT_INSTALL} xubuntu-core rsyslog sudo dialog apt-utils ntp evtest udev
 elif [ "$TARGET" == "server" ]; then
-    \${APT_INSTALL} sudo dialog apt-utils ntp evtest acpid
+    \${APT_INSTALL} sudo dialog apt-utils ntp evtest
 elif [ "$TARGET" == "gnome-full" ]; then
     \${APT_INSTALL} ubuntu-desktop-minimal rsyslog sudo dialog apt-utils ntp evtest onboard
 elif [ "$TARGET" == "xfce-full" ]; then
@@ -119,10 +119,11 @@ elif [ "$TARGET" == "xfce-full" ]; then
 fi
 
 if [ "$TARGET" == "server" ]; then
-    \${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager inetutils-ping \
+    \${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils pulseaudio pulseaudio-utils libasound2-plugins \
+        network-manager inetutils-ping iptables nftables iproute2 \
         tcpdump can-utils i2c-tools vim-tiny iperf3 ethtool netplan.io htop pciutils usbutils curl \
-        whiptail gnupg bc gdisk parted gpiod python3-libgpiod u-boot-tools bash-completion wget git python3 \
-        libgl1 libglib2.0-0 ttf-wqy-zenhei util-linux-extra
+        whiptail gnupg bc gdisk parted gpiod python3-libgpiod u-boot-tools bash-completion wget git \
+        python3 python3-pip python3-venv libgl1 libglib2.0-0 ttf-wqy-zenhei util-linux-extra
 else
     \${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager gdb inetutils-ping libssl-dev \
         vsftpd tcpdump can-utils i2c-tools strace vim iperf3 ethtool netplan.io toilet htop pciutils usbutils curl \

@@ -138,11 +138,14 @@ sudo tar -xpf ubuntu-base-$TARGET-$ARCH-*.tar.gz
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rpf packages/$ARCH/* $TARGET_ROOTFS_DIR/packages
 
-#GPU/CAMERA packages folder
+#GPU/CAMERA/QT5 packages folder
 install_packages
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages/install_packages
 sudo cp -rpfv packages/$ARCH/libmali/$MALI_PKG.deb $TARGET_ROOTFS_DIR/packages/install_packages
 sudo cp -rpfv packages/$ARCH/${ISP:0:5}/camera_engine_$ISP*.deb $TARGET_ROOTFS_DIR/packages/install_packages
+if [ "$TARGET" == "server" ] && [ -d "packages/$ARCH/qt5" ]; then
+    sudo cp -rpfv packages/$ARCH/qt5/anima-qt5-eglfs-runtime_*.deb $TARGET_ROOTFS_DIR/packages/install_packages
+fi
 
 #linux kernel deb
 if [ -e ../linux-headers* ]; then
@@ -201,7 +204,7 @@ export APT_INSTALL="apt-get install -fy --allow-downgrades"
 echo -e "\033[47;36m ---------- armsom -------- \033[0m"
 apt purge initramfs-tools -y
 
-\${APT_INSTALL} dialog toilet u-boot-tools edid-decode logrotate fdisk
+\${APT_INSTALL} dialog u-boot-tools edid-decode logrotate fdisk
 if [[ "$TARGET" == "gnome" || "$TARGET" == "gnome-full" ]]; then
     \${APT_INSTALL} gdisk
     #Desktop background picture
@@ -213,9 +216,10 @@ elif [[ "$TARGET" == "xfce" || "$TARGET" == "xfce-full" ]]; then
     ln -sf /usr/share/xfce4/backdrops/armsom-wallpaper.png /usr/share/xfce4/backdrops/xubuntu-wallpaper.png
 elif [ "$TARGET" == "server" ]; then
     \${APT_INSTALL} bluez bluez-tools
-    echo -e "\033[47;36m ----- Install Qt Mali DRM/EGLFS Runtime (Headless Server) ----- \033[0m"
-    \${APT_INSTALL} libqt5gui5 qt5-qpa-plugins libqt5core5a libqt5widgets5 libqt5network5 \
-        kmscube libinput10 fonts-wqy-zenhei gdbserver strace
+    echo -e "\033[47;36m ----- Install Runtime & Debug Tools (Headless Server) ----- \033[0m"
+    \${APT_INSTALL} kmscube libinput10 libxkbcommon0 fonts-wqy-zenhei gdbserver strace \
+        pulseaudio pulseaudio-utils libasound2-plugins \
+        iptables nftables iproute2 python3-pip python3-venv
 fi
 
 \${APT_INSTALL} /packages/install_packages/*.deb
@@ -304,6 +308,16 @@ if [[ "$TARGET" == "gnome-full" || "$TARGET" == "xfce-full" ]]; then
     \${APT_INSTALL} /packages/embedfire/scratch_*.deb
 fi
 
+if [ "$TARGET" == "server" ]; then
+    echo -e "\033[47;36m ----- Strip compiler toolchains & unused daemons (Server) ----- \033[0m"
+    apt-get purge -y --allow-change-held-packages \
+        gcc gcc-13 gcc-13-aarch64-linux-gnu gcc-aarch64-linux-gnu \
+        g++ g++-13 g++-13-aarch64-linux-gnu g++-aarch64-linux-gnu \
+        cpp cpp-13 cpp-13-aarch64-linux-gnu cpp-aarch64-linux-gnu \
+        libstdc++-13-dev libgcc-13-dev binutils binutils-aarch64-linux-gnu binutils-common libbinutils libasan8 \
+        humanity-icon-theme adwaita-icon-theme vim vim-runtime vsftpd modemmanager 2>/dev/null || true
+fi
+
 apt autoremove -y
 
 if [[ "$TARGET" == "gnome" || "$TARGET" == "gnome-full" ]]; then
@@ -322,9 +336,14 @@ apt list --upgradable | cut -d/ -f1 | xargs apt-mark hold
 echo -e "\033[47;36m ------- Custom Script ------- \033[0m"
 systemctl mask systemd-networkd-wait-online.service
 systemctl mask NetworkManager-wait-online.service
-systemctl disable hostapd
+systemctl disable hostapd 2>/dev/null || true
+systemctl disable ModemManager.service 2>/dev/null || true
+systemctl mask ModemManager.service 2>/dev/null || true
+systemctl disable vsftpd.service 2>/dev/null || true
+systemctl disable rkaiq_3A.service 2>/dev/null || true
+systemctl disable triggerhappy.service 2>/dev/null || true
 systemctl enable wifibt-init
-rm /lib/systemd/system/wpa_supplicant@.service
+rm -f /lib/systemd/system/wpa_supplicant@.service
 
 echo -e "\033[47;36m  ---------- Clean ----------- \033[0m"
 if [ -e "/usr/lib/arm-linux-gnueabihf/dri" ] ;
