@@ -219,7 +219,7 @@ elif [ "$TARGET" == "server" ]; then
     echo -e "\033[47;36m ----- Install Runtime & Debug Tools (Headless Server) ----- \033[0m"
     \${APT_INSTALL} kmscube libinput10 libxkbcommon0 fonts-wqy-zenhei gdbserver strace \
         pulseaudio pulseaudio-utils libasound2-plugins \
-        iptables nftables iproute2 python3-pip python3-venv
+        iptables nftables iproute2 python3-pip python3-venv vim-tiny
 fi
 
 \${APT_INSTALL} /packages/install_packages/*.deb
@@ -315,7 +315,7 @@ if [ "$TARGET" == "server" ]; then
         g++ g++-13 g++-13-aarch64-linux-gnu g++-aarch64-linux-gnu \
         cpp cpp-13 cpp-13-aarch64-linux-gnu cpp-aarch64-linux-gnu \
         libstdc++-13-dev libgcc-13-dev binutils binutils-aarch64-linux-gnu binutils-common libbinutils libasan8 \
-        humanity-icon-theme adwaita-icon-theme vim vim-runtime vsftpd modemmanager 2>/dev/null || true
+        humanity-icon-theme adwaita-icon-theme vsftpd modemmanager 2>/dev/null || true
 fi
 
 apt autoremove -y
@@ -344,6 +344,15 @@ systemctl disable rkaiq_3A.service 2>/dev/null || true
 systemctl disable triggerhappy.service 2>/dev/null || true
 systemctl enable wifibt-init
 rm -f /lib/systemd/system/wpa_supplicant@.service
+
+# Ensure vi is available and properly configured
+if [ -e /usr/bin/vim.tiny ]; then
+    update-alternatives --set vi /usr/bin/vim.tiny 2>/dev/null || ln -sf /usr/bin/vim.tiny /usr/bin/vi
+    if [ -f /etc/vim/vimrc.tiny ]; then
+        sed -i 's/"set nocompatible/set nocompatible/' /etc/vim/vimrc.tiny 2>/dev/null || true
+        grep -q "set backspace=" /etc/vim/vimrc.tiny || echo "set backspace=2" >> /etc/vim/vimrc.tiny
+    fi
+fi
 
 echo -e "\033[47;36m  ---------- Clean ----------- \033[0m"
 if [ -e "/usr/lib/arm-linux-gnueabihf/dri" ] ;
