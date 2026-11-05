@@ -140,6 +140,10 @@ start_wifi()
 	case "$WIFIBT_VENDOR" in
 		Broadcom) try_insmod dhd_static_buf ;;
 		Realtek) try_insmod rtkm ;;
+		Seekwave)
+			do_insmod skw_sdio_lite 0.5
+			do_insmod swt6621s_wifi
+			;;
 		aic8800)
 			case "$WIFIBT_BUS" in
 				usb) 
@@ -156,7 +160,7 @@ start_wifi()
 	echo "Wi-Fi/BT module: $WIFIBT_MODULE.ko"
 	do_insmod "$WIFIBT_MODULE"
 
-	for i in `seq 60`; do
+	for i in `seq 150`; do
 		if wifi_ready; then
 			if grep -wqE "wlan0" /proc/net/dev; then
 				echo "Successfully init Wi-Fi for $WIFIBT_CHIP!"
@@ -191,6 +195,9 @@ do_start_bt()
 				sdio) start_bt_aic_sdio;;
 			esac
 			;;
+		Seekwave)
+			return 0
+			;;
 		*)
 			echo "Unknown Wi-Fi/BT chip, fallback to Broadcom..."
 			start_bt_brcm
@@ -200,6 +207,10 @@ do_start_bt()
 
 start_bt()
 {
+	case "$WIFIBT_VENDOR" in
+		Seekwave) return 0 ;;
+	esac
+
 	if ! wifi_ready; then
 		echo "Wi-Fi is not ready..."
 		return 1

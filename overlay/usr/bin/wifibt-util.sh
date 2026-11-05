@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 BT_PINCTRL_DIR="/sys/firmware/devicetree/base/pinctrl/wireless-bluetooth"
 CHIPS_FILE="/var/run/wifibt-chips.txt"
@@ -129,6 +129,8 @@ Broadcom	AP6356S	02d0:4356	bcmdhd.ko
 Broadcom	AP6398S	02d0:4359	bcmdhd.ko
 Rockchip	RK960	0296:5349	rk960.ko
 aic8800	AIC8800D80	c8a1:0182
+Seekwave	SKW6621S	1ffe:6621	skw_sdio_lite.ko	swt6621s_wifi.ko
+Seekwave	SV6160	3607:6160	skw_sdio_lite.ko	swt6621s_wifi.ko
 EOF
 fi
 
