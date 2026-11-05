@@ -2,6 +2,8 @@
 Description=Manage USB device functions
 DefaultDependencies=no
 After=local-fs.target
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 Type=forking
