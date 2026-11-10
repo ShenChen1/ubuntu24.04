@@ -3,8 +3,7 @@
 #    10-help-text - print the help text associated with the distro
 
 printf "\n"
-printf " * Documentation:  http://doc.armsom.org\n"
-printf " * Management:     http://www.armsom.org\n"
+printf " * Aifa Intelligent Manufacturing (Hangzhou) Artificial Intelligence Technology Co., Ltd.\n"
 
 if [ -e /boot/boot_init ];then 
     source /etc/init.d/boot_init.sh > /dev/null 2>&1

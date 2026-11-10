@@ -2,7 +2,7 @@
 FROM ubuntu:22.04
 
 #维护者
-MAINTAINER armsom
+MAINTAINER anima
 
 RUN sed -i -r 's#http://(archive|security).ubuntu.com#http://mirrors.tuna.tsinghua.edu.cn#g' /etc/apt/sources.list \
   && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \

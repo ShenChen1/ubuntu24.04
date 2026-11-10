@@ -148,16 +148,16 @@ elif [ "$TARGET" == "server" ]; then
     \${APT_INSTALL}  
 fi
 
-HOST=armsom
+HOST=anima
 
 # Create User
-useradd -G sudo -m -s /bin/bash armsom
-passwd armsom <<IEOF
-armsom
-armsom
+useradd -G sudo -m -s /bin/bash anima
+passwd anima <<IEOF
+anima
+anima
 IEOF
-gpasswd -a armsom video
-gpasswd -a armsom audio
+gpasswd -a anima video
+gpasswd -a anima audio
 passwd root <<IEOF
 root
 root
@@ -167,7 +167,9 @@ IEOF
 sed -i '/pam_securetty.so/s/^/# /g' /etc/pam.d/login
 
 # hostname
-echo armsom > /etc/hostname
+echo anima > /etc/hostname
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 anima" >> /etc/hosts
 
 # set localtime
 #ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime

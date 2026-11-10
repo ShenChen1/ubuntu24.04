@@ -255,19 +255,19 @@ chmod +x /etc/rc.local
 export DEBIAN_FRONTEND=noninteractive
 export APT_INSTALL="apt-get install -fy --allow-downgrades"
 
-echo -e "\033[47;36m ---------- armsom -------- \033[0m"
+echo -e "\033[47;36m ---------- anima -------- \033[0m"
 apt purge initramfs-tools -y
 
 \${APT_INSTALL} dialog toilet u-boot-tools edid-decode logrotate fdisk
 if [[ "$TARGET" == "gnome" || "$TARGET" == "gnome-full" ]]; then
     \${APT_INSTALL} gdisk
     #Desktop background picture
-    ln -sf /usr/share/xfce4/backdrops/armsom-wallpaper.png /usr/share/backgrounds/warty-final-ubuntu.png
+    ln -sf /usr/share/xfce4/backdrops/anima-wallpaper.png /usr/share/backgrounds/warty-final-ubuntu.png
 elif [[ "$TARGET" == "xfce" || "$TARGET" == "xfce-full" ]]; then
     \apt-get remove -y gnome-bluetooth
     \${APT_INSTALL} bluez bluez-tools 
     #Desktop background picture
-    ln -sf /usr/share/xfce4/backdrops/armsom-wallpaper.png /usr/share/xfce4/backdrops/xubuntu-wallpaper.png
+    ln -sf /usr/share/xfce4/backdrops/anima-wallpaper.png /usr/share/xfce4/backdrops/xubuntu-wallpaper.png
 elif [ "$TARGET" == "server" ]; then
     \${APT_INSTALL} bluez bluez-tools
 fi
