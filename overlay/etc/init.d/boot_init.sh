@@ -2,6 +2,20 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# FIT A/B boot partitions contain raw images and cannot be mounted as /boot.
+for bootarg in $(cat /proc/cmdline); do
+	case "$bootarg" in
+		android_slotsuffix=_a|android_slotsuffix=_b)
+			echo "FIT A/B boot: skipping extboot initialization"
+			exit 0
+			;;
+		android_slotsuffix=*)
+			echo "Invalid A/B slot suffix in kernel command line" >&2
+			exit 1
+			;;
+	esac
+done
+
 board_info() {
 	if [[ "$2" == "rk3576" ]]; then
 		case $1 in
