@@ -353,13 +353,16 @@ if [[ "$TARGET" == "gnome-full" || "$TARGET" == "xfce-full" ]]; then
 fi
 
 apt autoremove -y
-\${APT_INSTALL} ubuntu-desktop
 
-add-apt-repository ppa:mozillateam/ppa && \
-echo 'Package: firefox*
+if [[ "$TARGET" != "server" ]]; then
+    \${APT_INSTALL} ubuntu-desktop
+
+    add-apt-repository ppa:mozillateam/ppa && \
+    echo 'Package: firefox*
 Pin: release o=LP-PPA-mozillateam
 Pin-Priority: 1001' | tee /etc/apt/preferences.d/mozilla-firefox && \
-apt-get update && \${APT_INSTALL} firefox
+    apt-get update && \${APT_INSTALL} firefox
+fi
 
 # mark package to hold
 apt list --upgradable | cut -d/ -f1 | xargs apt-mark hold
