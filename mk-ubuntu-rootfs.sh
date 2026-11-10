@@ -124,9 +124,69 @@ if [ ! -e ubuntu-base-"$TARGET"-$ARCH-*.tar.gz ]; then
     exit -1
 fi
 
+load_kernel_deb_version() {
+    if [ ! -r ../kernel/include/config/kernel.release ] || [ ! -r ../kernel/debian/changelog ]; then
+        echo "ERROR: Missing kernel build metadata. Run ./build.sh kerneldeb in the SDK root first." >&2
+        return 1
+    fi
+    if ! KERNEL_RELEASE=$(cat ../kernel/include/config/kernel.release); then
+        echo "ERROR: Cannot read kernel.release." >&2
+        return 1
+    fi
+    if [[ ! "$KERNEL_RELEASE" =~ ^[a-z0-9][a-z0-9.+-]*$ ]]; then
+        echo "ERROR: Invalid kernel.release. Run ./build.sh kerneldeb in the SDK root first." >&2
+        return 1
+    fi
+    if ! KERNEL_DEB_VERSION=$(dpkg-parsechangelog --file ../kernel/debian/changelog --show-field Version); then
+        echo "ERROR: Cannot read the kernel deb version. Run ./build.sh kerneldeb in the SDK root first." >&2
+        return 1
+    fi
+    if [ -z "$KERNEL_DEB_VERSION" ]; then
+        echo "ERROR: Missing Version in kernel/debian/changelog." >&2
+        return 1
+    fi
+}
+
+find_kernel_deb() {
+    local expected metadata deb
+    local -a matches=()
+    expected=$(printf '%s\t%s\t%s' "$1" "$2" "$3")
+    for deb in ../*.deb; do
+        [ -f "$deb" ] || continue
+        if ! metadata=$(dpkg-deb --show --showformat='${Package}\t${Version}\t${Architecture}' "$deb"); then
+            echo "WARNING: Cannot read deb metadata; ignoring $deb" >&2
+            continue
+        fi
+        [ "$metadata" != "$expected" ] || matches+=("$deb")
+    done
+    case "${#matches[@]}" in
+        0) return 1 ;;
+        1) printf '%s\n' "${matches[0]}" ;;
+        *)
+            echo "ERROR: Multiple matching debs for $1 ($2, $3):" >&2
+            printf '  %s\n' "${matches[@]}" >&2
+            return 2
+            ;;
+    esac
+}
+
+load_kernel_deb_version
+if ! KERNEL_IMAGE_DEB=$(find_kernel_deb "linux-image-$KERNEL_RELEASE" "$KERNEL_DEB_VERSION" "$ARCH"); then
+    echo "ERROR: Cannot select linux-image-$KERNEL_RELEASE ($KERNEL_DEB_VERSION, $ARCH). Run ./build.sh kerneldeb in the SDK root or resolve duplicate packages." >&2
+    exit 1
+fi
+echo "Selected kernel image deb: $KERNEL_IMAGE_DEB"
+if ! KERNEL_HEADER_DEB=$(find_kernel_deb "linux-headers-$KERNEL_RELEASE" "$KERNEL_DEB_VERSION" "$ARCH"); then
+    echo "ERROR: Cannot select linux-headers-$KERNEL_RELEASE ($KERNEL_DEB_VERSION, $ARCH). Run ./build.sh kerneldeb in the SDK root or resolve duplicate packages." >&2
+    exit 1
+fi
+echo "Selected kernel headers deb: $KERNEL_HEADER_DEB"
+
 finish() {
-    sudo umount $TARGET_ROOTFS_DIR/dev
-    exit -1
+    if ! ./ch-mount.sh -u "$TARGET_ROOTFS_DIR"; then
+        echo "ERROR: Failed to unmount rootfs after build failure; check remaining mounts before rebuilding." >&2
+    fi
+    exit 1
 }
 trap finish ERR
 
@@ -145,13 +205,10 @@ sudo cp -rpfv packages/$ARCH/libmali/$MALI_PKG.deb $TARGET_ROOTFS_DIR/packages/i
 sudo cp -rpfv packages/$ARCH/${ISP:0:5}/camera_engine_$ISP*.deb $TARGET_ROOTFS_DIR/packages/install_packages
 
 #linux kernel deb
-if [ -e ../linux-headers* ]; then
-    Image_Deb=$(basename ../linux-headers*)
-    sudo mkdir -p $TARGET_ROOTFS_DIR/boot/kerneldeb
-    sudo touch $TARGET_ROOTFS_DIR/boot/build-host
-    sudo cp -vrpf ../${Image_Deb} $TARGET_ROOTFS_DIR/boot/kerneldeb
-    sudo cp -vrpf ../${Image_Deb/headers/image} $TARGET_ROOTFS_DIR/boot/kerneldeb
-fi
+sudo mkdir -p "$TARGET_ROOTFS_DIR/boot/kerneldeb"
+sudo touch "$TARGET_ROOTFS_DIR/boot/build-host"
+sudo cp -vpf "$KERNEL_IMAGE_DEB" "$TARGET_ROOTFS_DIR/boot/kerneldeb/linux-image.deb"
+sudo cp -vpf "$KERNEL_HEADER_DEB" "$TARGET_ROOTFS_DIR/boot/kerneldeb/linux-headers.deb"
 
 # overlay folder
 sudo cp -rpf overlay/* $TARGET_ROOTFS_DIR/
@@ -217,7 +274,10 @@ fi
 
 \${APT_INSTALL} /packages/install_packages/*.deb
 
-\${APT_INSTALL} /boot/kerneldeb/* || true
+if ! \${APT_INSTALL} /boot/kerneldeb/linux-image.deb /boot/kerneldeb/linux-headers.deb; then
+    echo "ERROR: Kernel deb installation failed; aborting rootfs build." >&2
+    exit 1
+fi
 
 echo -e "\033[47;36m ----- power management ----- \033[0m"
 \${APT_INSTALL} pm-utils triggerhappy bsdmainutils
