@@ -14,10 +14,10 @@ if [ -e ${ROOTFSIMAGE} ]; then
 	rm -f ${ROOTFSIMAGE}
 fi
 
-# for script in ./post-build.sh ../device/rockchip/common/post-build.sh; do
-# 	[ -x $script ] || continue
-# 	sudo $script "$(realpath "$TARGET_ROOTFS_DIR")"
-# done
+for script in ./post-build.sh ../device/rockchip/common/post-build.sh; do
+	[ -x "$script" ] || continue
+	sudo "$script" "$(realpath "$TARGET_ROOTFS_DIR")"
+done
 
 sudo ./add-build-info.sh ${TARGET_ROOTFS_DIR}
 

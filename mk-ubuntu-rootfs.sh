@@ -211,15 +211,15 @@ sudo cp -vpf "$KERNEL_IMAGE_DEB" "$TARGET_ROOTFS_DIR/boot/kerneldeb/linux-image.
 sudo cp -vpf "$KERNEL_HEADER_DEB" "$TARGET_ROOTFS_DIR/boot/kerneldeb/linux-headers.deb"
 
 # overlay folder
-sudo cp -rpf overlay/* $TARGET_ROOTFS_DIR/
+sudo cp -rpf --no-preserve=ownership overlay/* $TARGET_ROOTFS_DIR/
 
 # overlay-firmware folder
-sudo cp -rpf overlay-firmware/* $TARGET_ROOTFS_DIR/
+sudo cp -rpf --no-preserve=ownership overlay-firmware/* $TARGET_ROOTFS_DIR/
 
 # overlay-debug folder
 # adb, video, camera  test file
 if [ "$VERSION" == "debug" ]; then
-    sudo cp -rpf overlay-debug/* $TARGET_ROOTFS_DIR/
+    sudo cp -rpf --no-preserve=ownership overlay-debug/* $TARGET_ROOTFS_DIR/
 fi
 
 ## hack the serial
@@ -234,17 +234,7 @@ fi
 
 ./ch-mount.sh -m $TARGET_ROOTFS_DIR
 
-ID=$(stat --format %u $TARGET_ROOTFS_DIR)
-
 cat << EOF | sudo chroot $TARGET_ROOTFS_DIR
-
-# Fixup owners
-if [ "$ID" -ne 0 ]; then
-    find / -user $ID -exec chown -h 0:0 {} \;
-fi
-for u in \$(ls /home/); do
-    chown -h -R \$u:\$u /home/\$u
-done
 
 apt-get update
 apt-get upgrade -y
