@@ -100,7 +100,7 @@ elif [ "$TARGET" == "xfce-full" ]; then
     \${APT_INSTALL} xubuntu-desktop rsyslog sudo dialog apt-utils ntp evtest udev
 fi
 
-\${APT_INSTALL} net-tools openssh-server ifupdown alsa-utils network-manager gdb inetutils-ping libssl-dev \
+\${APT_INSTALL} net-tools openssh-server ifupdown psmisc alsa-utils network-manager gdb inetutils-ping libssl-dev \
     vsftpd tcpdump can-utils i2c-tools strace vim iperf3 ethtool netplan.io toilet htop pciutils usbutils curl \
     whiptail gnupg bc xinput gdisk parted gcc sox libsox-fmt-all gpiod libgpiod-dev python3-pip python3-libgpiod \
     guvcview u-boot-tools bash-completion wget git python3 python3-venv util-linux-extra libgl1 libglib2.0-0
