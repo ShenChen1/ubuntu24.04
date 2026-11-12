@@ -22,8 +22,9 @@ done
 sudo ./add-build-info.sh ${TARGET_ROOTFS_DIR}
 
 # Apparent size + maxium alignment(file_count * block_size) + maxium journal size
-IMAGE_SIZE_MB=$(( $(sudo du --apparent-size -sm ${TARGET_ROOTFS_DIR} | cut -f1) + \
-	$(sudo find ${TARGET_ROOTFS_DIR} | wc -l) * 4 / 1024 + 64 ))
+# Use -x / -xdev to avoid traversing any external mounts even in unexpected edge cases
+IMAGE_SIZE_MB=$(( $(sudo du -x --apparent-size -sm ${TARGET_ROOTFS_DIR} | cut -f1) + \
+	$(sudo find ${TARGET_ROOTFS_DIR} -xdev | wc -l) * 4 / 1024 + 64 ))
 
 # Extra 10%
 IMAGE_SIZE_MB=$(( $IMAGE_SIZE_MB * 110 / 100 ))
