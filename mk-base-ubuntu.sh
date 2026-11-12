@@ -46,7 +46,7 @@ UBUNTU_RELEASE="24.04.3"
 if [ ! -d $TARGET_ROOTFS_DIR ] ; then
     sudo mkdir -p $TARGET_ROOTFS_DIR
 
-    if [ ! -e ubuntu-base-22.04.5-base-$ARCH.tar.gz ]; then
+    if [ ! -e ubuntu-base-${UBUNTU_RELEASE}-base-$ARCH.tar.gz ]; then
         echo "\033[36m wget ubuntu-base-${UBUNTU_RELEASE}-base-"$ARCH".tar.gz \033[0m"
 		wget -c http://cdimage.ubuntu.com/ubuntu-base/releases/${UBUNTU_VERSION}/release/ubuntu-base-${UBUNTU_RELEASE}-base-$ARCH.tar.gz
     fi
