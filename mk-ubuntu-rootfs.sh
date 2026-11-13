@@ -369,6 +369,12 @@ if [ "$TARGET" == "server" ]; then
     rm -f /etc/udev/rules.d/65-rockchip-drm-hotplug.rules
 fi
 
+echo -e "\033[47;36m ----- Fix permissions ------- \033[0m"
+# Vendor debs and tarballs carry build-host UIDs and world-writable modes.
+find /etc /usr -xdev \( -nouser -o -nogroup \) -exec chown -h root:root {} +
+find /etc /usr -xdev ! -type l -perm -0002 ! -perm -1000 -exec chmod go-w {} +
+[ ! -d /etc/netplan ] || find /etc/netplan -maxdepth 1 -type f -name '*.yaml' -exec chmod 0600 {} +
+
 # Ubuntu 24.04 no longer ships pam_lastlog.so.
 sed -i '/^[^#].*pam_lastlog\.so/s/^/# /' /etc/pam.d/login
 
@@ -392,7 +398,7 @@ then
     rm /etc/profile.d/qt.sh
 fi
 
-// fix: MACAddressPolicy 
+# fix: MACAddressPolicy
 truncate -s 0 /etc/machine-id
 truncate -s 0 /var/lib/dbus/machine-id 2>/dev/null || true
 
