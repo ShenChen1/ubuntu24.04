@@ -2,6 +2,7 @@
 Description=Resize all internal mounted partitions
 DefaultDependencies=no
 After=local-fs.target
+Before=sysinit.target
 ConditionPathExists=/etc/fstab
 
 [Service]
