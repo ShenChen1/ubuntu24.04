@@ -320,7 +320,9 @@ resume_wifibt()
 
 case "$1" in
 	start | restart | start_wifi | start_bt | "")
-		start_wifibt "${1:-start}" &
+		# Run in foreground so the oneshot unit orders Wi-Fi/BT bring-up
+		# before network.target and bluetooth.target.
+		start_wifibt "${1:-start}"
 		;;
 	stop) stop_wifibt ;;
 	suspend) suspend_wifibt ;;

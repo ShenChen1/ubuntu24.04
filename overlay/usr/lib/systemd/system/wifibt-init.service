@@ -1,7 +1,7 @@
 [Unit]
 Description=Init Rockchip Wifi/BT
 DefaultDependencies=no
-After=local-fs.target
+After=local-fs.target systemd-udev-trigger.service
 Before=network.target bluetooth.target
 
 [Service]
@@ -11,4 +11,4 @@ ExecStop=/usr/bin/wifibt-init.sh stop
 RemainAfterExit=yes
 
 [Install]
-WantedBy=network-online.target
+WantedBy=multi-user.target
