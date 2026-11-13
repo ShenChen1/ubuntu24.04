@@ -330,8 +330,9 @@ if [[ "$TARGET" == "gnome" ||  "$TARGET" == "xfce" || "$TARGET" == "gnome-full" 
 fi
 
 if [ -e "/usr/lib/aarch64-linux-gnu" ] ; then
-echo -e "\033[47;36m ------- move rknpu2 --------- \033[0m"
-mv /packages/rknpu2/rknpu2.tar  /
+echo -e "\033[47;36m ----- unpack rknpu2 --------- \033[0m"
+tar --no-same-owner -xf /packages/rknpu2/rknpu2.tar -C /
+ldconfig
 fi
 
 echo -e "\033[47;36m ----- Install rktoolkit ----- \033[0m"

@@ -11,6 +11,13 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Images built before rknpu2 was unpacked at build time still carry the
+# archive for first-boot extraction.
+extract_rknpu2() {
+    [ -e /rknpu2.tar ] || return 0
+    tar --no-same-owner -xf /rknpu2.tar -C /
+}
+
 install_packages() {
     case $1 in
         rk3288)
@@ -44,22 +51,22 @@ install_packages() {
         rk3568|rk3566)
 		MALI=bifrost-g52-g13p0
 		ISP=rkaiq_rk3568
-		[ -e /usr/lib/aarch64-linux-gnu/ ] && tar xvf /rknpu2.tar -C /
+		[ -e /usr/lib/aarch64-linux-gnu/ ] && extract_rknpu2
 		;;
         rk3562)
 		MALI=bifrost-g52-g13p0
 		ISP=rkaiq_rk3562
-		[ -e /usr/lib/aarch64-linux-gnu/ ] && tar xvf /rknpu2.tar -C /
+		[ -e /usr/lib/aarch64-linux-gnu/ ] && extract_rknpu2
 		;;
         rk3576)
 		MALI=bifrost-g52-g13p0
 		ISP=rkaiq_rk3576
-		[ -e /usr/lib/aarch64-linux-gnu/ ] && tar xvf /rknpu2.tar -C /
+		[ -e /usr/lib/aarch64-linux-gnu/ ] && extract_rknpu2
 		;;
         rk3588|rk3588s)
 		ISP=rkaiq_rk3588
 		MALI=valhall-g610-g24p0
-		[ -e /usr/lib/aarch64-linux-gnu/ ] && tar xvf /rknpu2.tar -C /
+		[ -e /usr/lib/aarch64-linux-gnu/ ] && extract_rknpu2
 		;;
     esac
 }
