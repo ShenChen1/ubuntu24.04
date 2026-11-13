@@ -112,8 +112,6 @@ boardname="${compatible%%rockchip,*}"
 
 /etc/init.d/boot_init.sh
 
-sleep 3s
-
 # first boot configure
 if [ ! -e "/usr/local/first_boot_flag" ]; then
     echo "It's the first time booting. The rootfs will be configured."
@@ -129,17 +127,10 @@ if [ ! -e "/usr/local/first_boot_flag" ]; then
         echo "/var/swapfile swap swap defaults 0 0" >> /etc/fstab
     fi
 
-    # Force rootfs synced
-    mount -o remount,sync /
-
     install_packages "$chipname" || exit 1
 
     if [ -e /usr/bin/gst-launch-1.0 ]; then
         setcap CAP_SYS_ADMIN+ep /usr/bin/gst-launch-1.0
-    fi
-
-    if [ -e "/dev/rfkill" ]; then
-        rm /dev/rfkill
     fi
 
     rm -rf /*.deb /*.tar
@@ -158,6 +149,8 @@ if [ ! -e "/usr/local/first_boot_flag" ]; then
     # fi
 
     touch /usr/local/first_boot_flag
+    # Persist first-boot changes without leaving / mounted with sync.
+    sync
 fi
 
 # #usb configfs reset
