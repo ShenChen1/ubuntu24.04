@@ -369,6 +369,9 @@ if [ "$TARGET" == "server" ]; then
     rm -f /etc/udev/rules.d/65-rockchip-drm-hotplug.rules
 fi
 
+# Ubuntu 24.04 no longer ships pam_lastlog.so.
+sed -i '/^[^#].*pam_lastlog\.so/s/^/# /' /etc/pam.d/login
+
 echo -e "\033[47;36m  ---------- Clean ----------- \033[0m"
 if [ -e "/usr/lib/arm-linux-gnueabihf/dri" ] ;
 then
